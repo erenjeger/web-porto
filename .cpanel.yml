@@ -15,32 +15,30 @@ deployment:
     - /bin/mkdir -p $APPPATH/storage/logs
 
     # Copy the Laravel source from the cPanel-managed Git repository.
-    # Keep .env on the server and do not copy Git metadata/node_modules.
+    # Keep the server-side .env and exclude Git metadata/node_modules.
     - /usr/bin/rsync -a --exclude='.git/' --exclude='.env' --exclude='node_modules/' ./ $APPPATH/
 
-    # Install PHP dependencies.
-    - /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
-
-    # Build Tailwind/Vite assets.
-    - npm install --no-audit --no-fund
-    - npm run build
+    # Run the remaining deployment commands from the Laravel application directory.
+    - /bin/bash -lc 'cd $APPPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction'
+    - /bin/bash -lc 'cd $APPPATH && npm install --no-audit --no-fund'
+    - /bin/bash -lc 'cd $APPPATH && npm run build'
 
     # Prepare Laravel for production.
-    - /usr/bin/php artisan migrate --force
-    - /usr/bin/php artisan storage:link
-    - /usr/bin/php artisan optimize
+    - /bin/bash -lc 'cd $APPPATH && /usr/bin/php artisan migrate --force'
+    - /bin/bash -lc 'cd $APPPATH && /usr/bin/php artisan storage:link'
+    - /bin/bash -lc 'cd $APPPATH && /usr/bin/php artisan optimize'
 
     # Laravel must be writable by the web server.
     - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
 
     # Publish only the public web files to public_html.
     - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp -a public/. $DEPLOYPATH/
+    - /bin/cp -a $APPPATH/public/. $DEPLOYPATH/
 
-    # The storage symlink must point to the application outside public_html.
+    # Recreate the storage symlink so uploads are served from public_html/storage.
     - /bin/rm -rf $DEPLOYPATH/storage
     - /bin/ln -s $APPPATH/storage/app/public $DEPLOYPATH/storage
 
-    # Ensure Laravel's public entry point is present.
-    - /bin/cp -f public/index.php $DEPLOYPATH/index.php
-    - /bin/cp -f public/.htaccess $DEPLOYPATH/.htaccess
+    # Ensure Laravel's public entry point and rewrite rules are present.
+    - /bin/cp -f $APPPATH/public/index.php $DEPLOYPATH/index.php
+    - /bin/cp -f $APPPATH/public/.htaccess $DEPLOYPATH/.htaccess
