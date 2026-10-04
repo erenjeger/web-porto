@@ -12,7 +12,7 @@
 <button class="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 font-medium text-white">Buat Akun</button>
 </form>
 <div class="relative my-6"><div class="border-t border-[#2a2a3e]"></div><span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#111118] px-3 text-sm text-[#4b5563]">atau</span></div>
-<a href="{{ route('auth.google') }}" class="flex w-full items-center justify-center gap-3 rounded-xl border border-[#2a2a3e] bg-[#1a1a27] px-4 py-3 font-medium text-white"><x-icon name="chrome" class="h-5 w-5 text-[#ea4335]"/> Daftar com Google</a>
+<a href="{{ route('auth.google') }}" class="flex w-full items-center justify-center gap-3 rounded-xl border border-[#2a2a3e] bg-[#1a1a27] px-4 py-3 font-medium text-white"><x-icon name="chrome" class="h-5 w-5 text-[#ea4335]"/> Daftar dengan Google</a>
 <p class="mt-6 text-center text-sm text-[#6b7280]">Sudah punya akun? <a href="{{ route('login') }}" class="text-cyan-400 hover:text-cyan-300">Masuk di sini</a></p>
 </div></div></div>
 @endsection
