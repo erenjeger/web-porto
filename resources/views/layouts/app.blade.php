@@ -1,0 +1,3 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="csrf-token" content="{{ csrf_token() }}"><title>@yield('title',config('app.name'))</title>@vite(['resources/css/app.css','resources/js/app.js'])</head>
+<body class="min-h-screen bg-[#0a0a0f] text-[#d1d5db] antialiased">@if(session('success'))<div id="flash" class="fixed right-5 top-5 z-[70] max-w-sm rounded-xl border border-cyan-500/20 bg-[#111118] px-4 py-3 text-sm text-cyan-300 shadow-2xl"><div class="flex items-center gap-2"><x-icon name="check" class="h-4 w-4"/>{{ session('success') }}</div></div>@endif @yield('content')</body></html>
