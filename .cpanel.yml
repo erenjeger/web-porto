@@ -1,5 +1,46 @@
+---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/myps7537/public_html/
-    - /bin/cp -R public/* $DEPLOYPATH
-    - /bin/cp -R public/.htaccess $DEPLOYPATH
+    # Laravel application lives outside public_html.
+    - export APPPATH=/home/myps7537/laravel-portfolio
+    - export DEPLOYPATH=/home/myps7537/public_html
+
+    # Create the application directory and required Laravel runtime directories.
+    - /bin/mkdir -p $APPPATH
+    - /bin/mkdir -p $APPPATH/bootstrap/cache
+    - /bin/mkdir -p $APPPATH/storage/app/public
+    - /bin/mkdir -p $APPPATH/storage/framework/cache
+    - /bin/mkdir -p $APPPATH/storage/framework/sessions
+    - /bin/mkdir -p $APPPATH/storage/framework/views
+    - /bin/mkdir -p $APPPATH/storage/logs
+
+    # Copy the Laravel source from the cPanel-managed Git repository.
+    # Keep .env on the server and do not copy Git metadata/node_modules.
+    - /usr/bin/rsync -a --exclude='.git/' --exclude='.env' --exclude='node_modules/' ./ $APPPATH/
+
+    # Install PHP dependencies.
+    - /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+
+    # Build Tailwind/Vite assets.
+    - npm install --no-audit --no-fund
+    - npm run build
+
+    # Prepare Laravel for production.
+    - /usr/bin/php artisan migrate --force
+    - /usr/bin/php artisan storage:link
+    - /usr/bin/php artisan optimize
+
+    # Laravel must be writable by the web server.
+    - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
+
+    # Publish only the public web files to public_html.
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -a public/. $DEPLOYPATH/
+
+    # The storage symlink must point to the application outside public_html.
+    - /bin/rm -rf $DEPLOYPATH/storage
+    - /bin/ln -s $APPPATH/storage/app/public $DEPLOYPATH/storage
+
+    # Ensure Laravel's public entry point is present.
+    - /bin/cp -f public/index.php $DEPLOYPATH/index.php
+    - /bin/cp -f public/.htaccess $DEPLOYPATH/.htaccess
